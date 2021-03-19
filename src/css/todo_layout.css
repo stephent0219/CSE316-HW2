@@ -28,6 +28,7 @@
     top:5.5%;
     left:0%;
     padding-left: 15px;
+    overflow-y: auto;
 }
 
 #workspace {
