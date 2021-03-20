@@ -52,8 +52,6 @@ class App extends Component {
     };
 
 
-
-
     this.state = {
       toDoLists: recentLists,
       currentList: {items: []},
@@ -62,6 +60,32 @@ class App extends Component {
       useVerboseFeedback: true
     }
   }
+
+  refresh = () =>{
+    let items = this.state.currentList.items;
+    for(let i =0; i < items.length; i++){
+      let div = document.getElementById("task-col-"+items[i].id);
+      let input = document.getElementById('task-column-input-'+items[i].id);
+      div.style.display = "block";
+      input.style.display = "none";
+    }
+    for(let i =0; i < items.length; i++){
+      let div = document.getElementById("due-date-col-"+items[i].id);
+      let input = document.getElementById('due-date-column-input-'+items[i].id);
+      div.style.display = "block";
+      input.style.display = "none";
+    }
+    for(let i =0; i < items.length; i++){
+      let div = document.getElementById("status-col-"+items[i].id);
+      let input = document.getElementById('status-select-'+items[i].id);
+      div.style.display = "block";
+      input.style.display = "none";
+    }
+
+  }
+
+
+
 
   // WILL LOAD THE SELECTED LIST
   loadToDoList = (toDoList) => {
@@ -79,22 +103,35 @@ class App extends Component {
     );
     
     nextLists.unshift(toDoList);
+
+    this.tps.clearAllTransactions();
     
     document.getElementById("todo-list-button-"+toDoList.id).style.color = "#ffc819";
-    document.getElementById("todo-list-button-"+toDoList.id).style.backgroundColor = "#40454e";
-
+    document.getElementById("todo-list-button-"+toDoList.id).style.backgroundColor = "#40454e";    
 
     document.getElementById("add-list-button").style.color = "#322d2d";
-    document.getElementById("add-list-button").style.pointerEvents = "none";
+    document.getElementById("add-list-button").style.pointerEvents = 'none';
 
-    // console.log(document.getElementsByClassName("list-controls-col")[0]);
-    // console.log(document.getElementsByClassName("list-controls-col"));
+    document.getElementById("undo-button").style.color = "#322d2d";
+    document.getElementById("undo-button").style.pointerEvents = 'none';
 
-   
+    document.getElementById("redo-button").style.color = "#322d2d";
+    document.getElementById("redo-button").style.pointerEvents = 'none';
+  
+    document.getElementById("add-item-button").style.color = "rgb(233,237,240)";
+    document.getElementById("add-item-button").style.pointerEvents = 'auto';
+
+    document.getElementById("delete-list-button").style.color = "rgb(233,237,240)";
+    document.getElementById("delete-list-button").style.pointerEvents = 'auto';
+
+    document.getElementById("close-list-button").style.color = "rgb(233,237,240)";
+    document.getElementById("close-list-button").style.pointerEvents = 'auto';
+
+
     this.setState({
       toDoLists: nextLists,
       currentList: toDoList
-    });
+    },this.afterToDoListsChangeComplete);
 
   }
 
@@ -130,14 +167,16 @@ class App extends Component {
     let transaction = new addItem(index,items,newItem);
     this.tps.addTransaction(transaction);
 
-    // this.state.currentList.items.splice(this.state.nextListItemId,0,newItem);
-    
+    if(this.tps.getUndoSize() !== 0){
+      document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+      document.getElementById("undo-button").style.pointerEvents = "auto";
+    }
 
     // AND SET THE STATE, WHICH SHOULD FORCE A render
     this.setState({
       currentList: this.state.currentList,
       nextListItemId: this.state.nextListItemId+1
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
 
@@ -188,12 +227,13 @@ class App extends Component {
       app.setState({
         toDoLists: toDoList,
         currentList: {items:[]}
-      });
+      }, app.afterToDoListsChangeComplete);
     } 
 
     document.getElementById("cancel-button").onmousedown = function() {
       dialog.style.display="none";
     }
+    this.handleCloseCurrentListCallback();
 
     this.setState({
       toDoLists: toDoList,
@@ -212,10 +252,13 @@ class App extends Component {
         
     let transaction = new moveItemUp(items,toDoListItem);
     this.tps.addTransaction(transaction);
-
+    if(this.tps.getUndoSize() !== 0){
+      document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+      document.getElementById("undo-button").style.pointerEvents = "auto";
+    }
     this.setState({
       currentList: this.state.currentList
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
 
@@ -227,10 +270,13 @@ class App extends Component {
 
     let transaction = new moveItemDown(items,toDoListItem);
     this.tps.addTransaction(transaction);
-
+    if(this.tps.getUndoSize() !== 0){
+      document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+      document.getElementById("undo-button").style.pointerEvents = "auto";
+    }
     this.setState({
       currentList: this.state.currentList
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
 
@@ -241,10 +287,13 @@ class App extends Component {
 
     let transaction = new deleteItem(indexOfItem,items,toDoListItem);
     this.tps.addTransaction(transaction);
-
+    if(this.tps.getUndoSize() !== 0){
+      document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+      document.getElementById("undo-button").style.pointerEvents = "auto";
+    }
     this.setState({
       currentList: this.state.currentList
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
 
@@ -252,9 +301,17 @@ class App extends Component {
 
   undoControlButton = () =>{
     this.tps.undoTransaction();
+    if(this.tps.getUndoSize() === 0){
+      document.getElementById("undo-button").style.color = "#322d2d";
+      document.getElementById("undo-button").style.pointerEvents = "none";
+    }
+    if(this.tps.getRedoSize() !== 0){
+      document.getElementById("redo-button").style.color = "rgb(233,237,240)";
+      document.getElementById("redo-button").style.pointerEvents = "auto";
+    }
     this.setState({
       currentList: this.state.currentList
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
 
@@ -262,9 +319,18 @@ class App extends Component {
 
   redoControlButton = () =>{
     this.tps.doTransaction();
+    if(this.tps.getRedoSize() === 0){
+      document.getElementById("redo-button").style.color = "#322d2d";
+      document.getElementById("redo-button").style.pointerEvents = "none";
+    }
+    if(this.tps.getUndoSize() !== 0){
+      document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+      document.getElementById("undo-button").style.pointerEvents = "auto";
+    }
+
     this.setState({
       currentList: this.state.currentList
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
 
@@ -290,7 +356,7 @@ class App extends Component {
       app.setState({
         toDoLists: toDoList
       });
-    });
+    }, this.afterToDoListsChangeComplete);
 
   }
 
@@ -304,23 +370,35 @@ class App extends Component {
     }
     document.getElementById("add-list-button").style.color = "#ffc819";
     document.getElementById("add-list-button").style.pointerEvents = "auto";
+
+
+
+    document.getElementById("undo-button").style.color = "#322d2d";
+    document.getElementById("undo-button").style.pointerEvents = "none";
+
+    document.getElementById("redo-button").style.color = "#322d2d";
+    document.getElementById("redo-button").style.pointerEvents = "none";
+
+    document.getElementById("add-item-button").style.color = "#322d2d";
+    document.getElementById("add-item-button").style.pointerEvents = "none";
+
+    document.getElementById("delete-list-button").style.color = "#322d2d";
+    document.getElementById("delete-list-button").style.pointerEvents = "none";
+
+    document.getElementById("close-list-button").style.color = "#322d2d";
+    document.getElementById("close-list-button").style.pointerEvents = "none";
     this.setState({
       currentList: {items:[]},
       toDoLists : this.state.toDoLists
-    });
+    }, this.afterToDoListsChangeComplete);
   }
 
-
-  
-  
-
-  // myFunction(){
-    
-  //   console.log("fffk");
-  //   alert("You pressed a key inside the input field");
-  // }
-
-
+  update = () =>{
+    this.setState({
+      // currentList: {items:[]},
+      toDoLists : this.state.toDoLists
+    },this.afterToDoListsChangeComplete);
+  }
 
 
 
@@ -347,8 +425,9 @@ class App extends Component {
             undoControlButtonCallback = {this.undoControlButton}
             redoControlButtonCallback = {this.redoControlButton}
             handleCloseCurrentListCallback = {this.handleCloseCurrentListCallback}
-            // myFunctionCallback = {this.myFunction}
+            refresh = {this.refresh}
             TPS = {this.tps}
+            afterToDoListsChangeComplete = {this.update}
           />
 
           <div id="delete-confirm-dialog" style = {{display:"none"}} className="modal">
@@ -364,11 +443,6 @@ class App extends Component {
 
               </div>
           </div>
-
-          {/* <div>
-            <input type="text" onKeyDown={this.myFunction()}></input>
-          </div> */}
-          
 
         </div>      
       );

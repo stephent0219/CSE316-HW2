@@ -11,16 +11,8 @@ import changeStatus from '../common/changeStatus'
 class ToDoItem extends Component {
     constructor(props) {
         super(props);
-        
         // DISPLAY WHERE WE ARE
         console.log("\t\t\tToDoItem " + this.props.toDoListItem.id + " constructor");
-
-        
-        // if(this.props.toDoListItem === this.props.items[0]){
-        //     var kkk = document.getElementById('arrow-up-'+this.props.toDoListItem.id);
-        //     console.log('arrow-up-'+this.props.toDoListItem.id);
-        //     // document.getElementById('arrow-up-'+this.props.toDoListItem.id).style.color = "#322d2d";
-        // }
     }
 
     componentDidMount = () => {
@@ -40,6 +32,8 @@ class ToDoItem extends Component {
         var app = this;
 
         tasks.addEventListener("mousedown",() => {
+            this.props.refresh();
+
             tasksInput.style.display = "block";
             tasksInput.value = tasks.innerHTML;
             tasks.style.display = "none";
@@ -49,8 +43,13 @@ class ToDoItem extends Component {
             
             let transaction = new changeTask(tasks,tasksInput,listItem);
             app.props.TPS.addTransaction(transaction);
+            if(this.props.TPS.getUndoSize() !== 0){
+                document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+                document.getElementById("undo-button").style.pointerEvents = "auto";
+            }
+            this.props.afterToDoListsChangeComplete();
         });
-
+       
     }
 
     changeDueDate = () =>{
@@ -60,6 +59,8 @@ class ToDoItem extends Component {
         var app = this;
 
         dueDate.addEventListener("mousedown",() => { 
+            this.props.refresh();
+
             duedateInput.style.display = "block";
             duedateInput.value = dueDate.innerHTML;
             dueDate.style.display = "none";
@@ -69,6 +70,11 @@ class ToDoItem extends Component {
 
             let transaction = new changeDueDate(dueDate,duedateInput,listItem);
             app.props.TPS.addTransaction(transaction);
+            if(this.props.TPS.getUndoSize() !== 0){
+                document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+                document.getElementById("undo-button").style.pointerEvents = "auto";
+            }
+            this.props.afterToDoListsChangeComplete();
         });
 
     }
@@ -82,6 +88,8 @@ class ToDoItem extends Component {
         var app = this;
 
         status.addEventListener("mousedown",() => { 
+            this.props.refresh();
+
             statusSelect.style.display = "block";
             statusSelect.value = status.innerHTML;
             status.style.display = "none";
@@ -90,8 +98,15 @@ class ToDoItem extends Component {
         statusSelect.addEventListener("focusout",() => {
             let transaction = new changeStatus(status,statusSelect,listItem);
             app.props.TPS.addTransaction(transaction);
+            if(this.props.TPS.getUndoSize() !== 0){
+                document.getElementById("undo-button").style.color = "rgb(233,237,240)";
+                document.getElementById("undo-button").style.pointerEvents = "auto";
+            }
+            this.props.afterToDoListsChangeComplete();
         });
     }
+
+
 
 
 
@@ -107,7 +122,7 @@ class ToDoItem extends Component {
         this.props.itemDeleteCallback(this.props.toDoListItem);
     }
 
-
+    
 
     render() {
         // DISPLAY WHERE WE ARE
@@ -116,14 +131,16 @@ class ToDoItem extends Component {
         let listItem = this.props.toDoListItem;
         let statusType = "status-complete";
 
-        if (listItem.status === "incomplete")
+        if (listItem.status === "incomplete"){
             statusType = "status-incomplete";
-
+        }
+        
         return (
+
             <div id={'todo-list-item-' + listItem.id} className='list-item-card'>
 
                 <div className='item-col task-col' id = {'task-col-'+listItem.id} onClick = {this.changeTasks}>{listItem.description}</div>
-                <input className = 'task-column-input' autoFocus id = {'task-column-input-'+listItem.id} style = {{display:'none'}}></input>
+                <input className = 'task-column-input' id = {'task-column-input-'+listItem.id} style = {{display:'none'}}></input>
 
                 <div className='item-col due-date-col' id = {'due-date-col-'+listItem.id} onClick = {this.changeDueDate}>{listItem.due_date}</div>
                 <input type = 'date' className = 'due-date-column-input' id = {'due-date-column-input-'+listItem.id} style = {{display:'none'}}></input>
@@ -134,8 +151,10 @@ class ToDoItem extends Component {
 
                 <div className='item-col test-4-col'></div>
                 <div className='item-col list-controls-col'>
-                    <KeyboardArrowUp className='list-item-control todo-button' id={"arrow-up-"+listItem.id} onClick={this.handleMoveItemUp} />
-                    <KeyboardArrowDown className='list-item-control todo-button' id={'arrow-down-'+listItem.id} onClick={this.handleMoveItemDown} />
+                    <KeyboardArrowUp className='list-item-control todo-button' id={"arrow-up-${listItem.id}"} onClick={this.handleMoveItemUp}
+                     style={this.props.disableUp ? {color: "#322d2d", pointerEvents: "none"} : {color: "rgb(233,237,240", pointerEvents: "auto"}} />
+                    <KeyboardArrowDown className='list-item-control todo-button' id={'arrow-down-'+listItem.id} onClick={this.handleMoveItemDown}
+                     style={this.props.disableDown ? {color: "#322d2d", pointerEvents: "none"} : {color: "rgb(233,237,240", pointerEvents: "auto"}} />
                     <Close className='list-item-control todo-button' id={'close-list-'+listItem.id} onClick={this.handleDeleteItem} />
                     <div className='list-item-control'></div>
         <div className='list-item-control'></div>

@@ -75,6 +75,10 @@
     font-weight: bold;
 }
 
+/* .list-item-card:hover{
+    background-color: #7e8084;
+} */
+
 .todo-list-button {
     cursor:pointer;
     background-color: var(--swatch-complement);
@@ -82,17 +86,17 @@
 }
 
 .todo-list-button:hover {
-    background-color: #d9d6cc;
+    background-color:  #d9d6cc;
 }
 
 .todo-button {
     cursor:pointer;
-    background-color: var(--swatch-complement);
+    background-color: var(--swatch-primary);
     font-weight: bold;
 }
 
 .todo-button:hover {
-    background-color: #d9d6cc;
+    background-color:  #d9d6cc;
 }
 
 #add-list-button {
@@ -107,9 +111,6 @@
     color: var(--swatch-text-accent);
 }
 
-#add-item-button, #delete-list-button, #close-list-button {
-    text-align: center;
-}
 
 
 
@@ -175,16 +176,17 @@
      float:right;
  }
 
+
  .task-column-input{
     background-color: var(--swatch-primary);
     width: 18rem;
-    color:white;
+    color: #e9edf0;
 }
 
 .due-date-column-input{
     background-color: var(--swatch-primary);
     width: 18rem;
-    color:white;
+    color: #e9edf0;
 }
 
 .status-select{
@@ -194,6 +196,7 @@
     font-family: var(--font-primary);
 }
 
+
 .rename-list{
     background-color: var(--swatch-primary);
     width: 9rem;
@@ -202,7 +205,28 @@
     font-family: var(--font-primary);
 }
 
+#undo-button,#redo-button,#add-item-button,#delete-list-button,#close-list-button{
+    color:#322d2d;
+    pointer-events: none;
+    text-align: center;
+}
 
+
+#undo-button:hover{
+    background-color: #d9d6cc;
+}
+#redo-button:hover{
+    background-color: #d9d6cc;
+}
+#add-item-button:hover{
+    background-color: #d9d6cc;
+}
+#delete-list-button:hover{
+    background-color: #d9d6cc;
+}
+#close-list-button:hover{
+    background-color: #d9d6cc;
+}
 
 #close-button:hover{
     background-color: #d9d6cc;
@@ -216,3 +240,5 @@
 #cancel-button:hover{
     background-color:#d9d6cc;
 }
+
+
